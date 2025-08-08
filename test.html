@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Video.js – Play from JSON</title>
+  <link href="https://vjs.zencdn.net/7.21.1/video-js.css" rel="stylesheet" />
+  <style>
+    body { background:#111; color:#fff; padding:20px; }
+  </style>
+</head>
+<body>
+
+<video id="my-player" class="video-js vjs-default-skin" controls preload="auto" poster="" data-setup='{}' width="880" height="496"></video>
+
+<script src="https://vjs.zencdn.net/7.21.1/video.min.js"></script>
+<script>
+  // Your JSON data
+  const data = {
+    sources: [
+      {
+        file: "https://rumble.com/hls-vod/6v484e/playlist.m3u8",
+        type: "hls",
+        label: "Original",
+        default: false
+      }
+    ],
+    tracks: [
+      { file: "https://cors-anywhere.herokuapp.com/https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Arabic.ar-d5XLbVh.vtt", label: "Arabic", default: true },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Bengali.bn-N1IWKje.vtt", label: "Bengali" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_French.fr-BhIWYUH.vtt", label: "French" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_German.de-Qk0n1KR.vtt", label: "German" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Indonesian.id-XYWUvni.vtt", label: "Indonesian" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Italian.it-kHYZM0i.vtt", label: "Italian" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Khmer.km-WdN6Eun.vtt", label: "Khmer" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Myanmar.my-bJOnXHv.vtt", label: "Myanmar (Burmese)" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Persian.fa-2bxgcek.vtt", label: "Persian" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Polish.pl-jCWuyHA.vtt", label: "Polish" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Portuguese.pt-QWd4OZs.vtt", label: "Portuguese" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Russian.ru-bAYH2N6.vtt", label: "Russian" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Spanish.es-ZUOGIih.vtt", label: "Spanish" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Thai.th-lYJ5ubU.vtt", label: "Thai" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Turkish.tr-HxZuECq.vtt", label: "Turkish" },
+      { file: "https://play.streamplay.co.in/uploads/subtitles/soul 2x113_English_Vietnamese.vi-QmJCMXK.vtt", label: "Vietnamese" }
+    ]
+  };
+
+  const player = videojs('my-player');
+
+  // Set the source (HLS)
+  player.src({
+    src: data.sources[0].file,
+    type: 'application/x-mpegURL'
+  });
+
+  // Add subtitle tracks
+  data.tracks.forEach(track => {
+    player.addRemoteTextTrack({
+      kind: 'subtitles',
+      src: track.file,
+      srclang: track.label.toLowerCase().substring(0,2), // crude lang code
+      label: track.label,
+      default: !!track.default
+    }, false);
+  });
+</script>
+
+</body>
+</html>
