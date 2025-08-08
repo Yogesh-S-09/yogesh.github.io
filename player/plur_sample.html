@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HLS Player with Quality & Subtitles</title>
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+<style>
+    body { background: #111; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
+    video { max-width: 100%; border-radius: 8px; }
+</style>
+</head>
+<body>
+
+<h2 id="title"></h2>
+<video id="player" controls crossorigin playsinline></video>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+<script>
+// Your JSON data
+const videoData = {
+    "title": "Big Buck Bunny",
+    "poster": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Big_Buck_Bunny_4K.webm/800px--Big_Buck_Bunny_4K.webm.jpg",
+    "sources": [
+        { "file": "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8", "type": "hls", "label": "Original" }
+    ],
+    "tracks": [
+        { "file": "Big_Buck_Bunny_4K.webm.en.srt.vtt", "label": "English", "srclang": "en" }
+        // Add other tracks from your JSON here if needed
+    ]
+};
+
+// DOM references
+const video = document.getElementById('player');
+document.getElementById('title').textContent = videoData.title;
+video.poster = videoData.poster;
+
+// Add subtitle tracks dynamically
+videoData.tracks.forEach(track => {
+    const trackEl = document.createElement('track');
+    trackEl.kind = "subtitles";
+    trackEl.label = track.label;
+    trackEl.srclang = track.srclang || track.label.toLowerCase().substring(0,2);
+    trackEl.src = track.file;
+    if (track.default) trackEl.default = true;
+    video.appendChild(trackEl);
+});
+
+const source = videoData.sources[0].file;
+
+// Setup HLS with Plyr
+if (Hls.isSupported()) {
+    const hls = new Hls();
+    hls.loadSource(source);
+    hls.attachMedia(video);
+
+    hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+        const availableQualities = data.levels.map(l => l.height).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => b - a);
+
+        const player = new Plyr(video, {
+            captions: { active: true, update: true, language: 'auto' },
+            quality: {
+                default: availableQualities[0],
+                options: availableQualities,
+                forced: true,
+                onChange: (newQuality) => {
+                    hls.levels.forEach((level, levelIndex) => {
+                        if (level.height === newQuality) {
+                            hls.currentLevel = levelIndex;
+                        }
+                    });
+                }
+            }
+        });
+    });
+} else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    // Native HLS support (Safari, iOS)
+    video.src = source;
+    new Plyr(video, { captions: { active: true, update: true, language: 'auto' } });
+}
+</script>
+
+</body>
+</html>
